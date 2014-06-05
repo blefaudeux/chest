@@ -60,14 +60,14 @@ def run(n_max_frame):
                 frame_accumulator.pile_up(frame_bw)
 
             # Store the results :
-	        stop_time = time.time()
-	        print "Store frame - {0:.2f}s to process".format(stop_time-start_time)
+            stop_time = time.time()
+            print "Store frame - {0:.2f}s to process".format(stop_time-start_time)
 
             filename = base_filename + str(i) + '.jpg'
             cv2.imwrite(filename, frame_accumulator.get_fused_frame())
 
             filename = base_filename + str(i) + 'raw' + '.jpg'
-	        cv2.imwrite(filename, frame_bw)
+            cv2.imwrite(filename, frame_bw)
             i += 1
 
     print "Bybye.."
