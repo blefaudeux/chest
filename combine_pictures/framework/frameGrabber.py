@@ -212,6 +212,8 @@ class PiCamera(FrameGrabber):
         self.n_frames = 0
         self.keep_going = True
         self.ongoing_record = False
+        self.cam.ISO = 800 # 0 to keep it automatic
+        self.cam.shutter_speed = 500000 # in microseconds
 
     def set_definition(self, width, height):
         self.width = width
