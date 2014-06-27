@@ -35,45 +35,60 @@ class batchCalibration:
         self.sq_size_h      = 0.0
         self.sq_size_v      = 0.0
     
-    def calibrate(self):
-        # Get the pattern parameters
-        h_dim = utils.getAnswer(
-        "Number of inner corners on the horizontal dimension ? ", '12345678910')
-
-        v_dim = utils.getAnswer(
-        "Number of inner corners on the vertical dimension ? ", '12345678910')
-
-        # Enter the number of squares over each dimensions
-        self.pattern_size = (int(h_dim), int(v_dim))
-        print "Chessboard dimensions : {} x {}"\
-            .format(self.pattern_size[0], self.pattern_size[1])
+    def calibrate(self, usedefaults = True):
+        
+        if not usedefaults:
+            # Get the pattern parameters
+            h_dim = utils.getAnswer(
+            "Number of inner corners on the horizontal dimension ? ", '12345678910')
     
-        get_square_size = False
-        while not(get_square_size):
-            sq_size = raw_input("Horizontal Size (in m) of the squares ? ")
-
-            try:
-                self.sq_size_h = float(sq_size)
-                get_square_size = True
-
-            except ValueError:
-                print "Cannot determine dimension"
-
-        get_square_size = False
-        while not(get_square_size):
-            sq_size = raw_input("Vertical Size (in m) of the squares ? ")
-
-            try:
-                self.sq_size_v = float(sq_size)
-                get_square_size = True
-
-            except ValueError:
-                print "Cannot determine dimension"    
-
+            v_dim = utils.getAnswer(
+            "Number of inner corners on the vertical dimension ? ", '12345678910')
+    
+            # Enter the number of squares over each dimensions
+            self.pattern_size = (int(h_dim), int(v_dim))
+            print "Chessboard dimensions : {} x {}"\
+                .format(self.pattern_size[0], self.pattern_size[1])
+        
+            get_square_size = False
+            while not(get_square_size):
+                sq_size = raw_input("Horizontal Size (m) of the squares ? ")
+    
+                try:
+                    self.sq_size_h = float(sq_size)
+                    get_square_size = True
+    
+                except ValueError:
+                    print "Cannot determine dimension"
+    
+            get_square_size = False
+            while not(get_square_size):
+                sq_size = raw_input("Vertical Size (m) of the squares ? ")
+    
+                try:
+                    self.sq_size_v = float(sq_size)
+                    get_square_size = True
+    
+                except ValueError:
+                    print "Cannot determine dimension"    
+                    
+        else :
+            h_dim = 8
+            v_dim = 6
+            self.pattern_size = (int(h_dim), int(v_dim))                
+            self.sq_size_h = 0.0295
+            self.sq_size_v = 0.0295
+            
+            print "Used parameters :"
+            print "Pattern size : {}".format(self.pattern_size)
+            print "Physical dimensions : {}m x {}m \n ".format(self.sq_size_h, self.sq_size_v)
+            
         # Get the root folder, Get all the subfolders, 
         # do all the subsequent calibrations and record the results 
         path = raw_input("Root path for the calibration folders : ")           
         
+        path = os.path.join(path, '')
+       
         for dirpath, dirnames, filenames in os.walk(path):
 
             for dir in dirnames :
@@ -92,7 +107,8 @@ class batchCalibration:
                     else :
                         new_cam.calibrate()
                         
-                    
+        raw_input("Calibration done, press key to exit")
+					
     def readFolders(self, path):
         # Get all the folders from this path
         pass 
@@ -100,4 +116,4 @@ class batchCalibration:
 
 # Run this script
 new_run = batchCalibration()
-new_run.calibrate()
+new_run.calibrate( )

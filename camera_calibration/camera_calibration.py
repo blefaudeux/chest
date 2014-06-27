@@ -123,8 +123,7 @@ class cameraCalibration:
         if (folder_path == ''):
             folder_path = '.'
 
-        if not(folder_path[-1] == "/") :
-            folder_path = folder_path + "/"
+        folder_path = os.path.join(folder_path, '')
 
         # Scan folder and load pictures
         folder_path = os.path.abspath(folder_path)
@@ -314,9 +313,8 @@ class cameraCalibration:
         b_skip_next = False
         b_reject    = False
 
-        cv2.namedWindow("patternDetection", cv2.CV_WINDOW_AUTOSIZE)
-
         if not(self.auto_validation):
+            cv2.namedWindow("patternDetection", cv2.CV_WINDOW_AUTOSIZE)
             print "Recording patterns from files, press r to reject"
         else :
             print "Finding the patterns.."
@@ -355,10 +353,9 @@ class cameraCalibration:
                     
                 resized_pict = cv2.resize(new_frame,(new_size[1],new_size[0]))
                 
-                # Show and wait for key
-                cv2.imshow("patternDetection", resized_pict)
-                
                 if not(self.auto_validation):
+                    # Show and wait for key
+                    cv2.imshow("patternDetection", resized_pict)
                     key_choice = cv2.waitKey()
                 else:
                     key_choice = -1
