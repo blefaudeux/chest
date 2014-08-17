@@ -9,6 +9,8 @@ except ImportError:
 import numpy as np
 import pylab as pl
 
+import glob
+import os
 
 #
 # from fastkml import kml
@@ -35,35 +37,45 @@ def parse_kml(file):
     coordlist = np.zeros((1, 3))
 
     for placemark in placemarkList:
-        records = placemark.findall(".//{"+rootName+"}coordinates")
+        # Only use the records if the attribut contain 'GPS'
+        attrib = placemark.attrib
+        id = attrib.get('id')
 
-        for coord in records:
-            coordline = (coord.text.replace(",", " ")).split(' ')
+        if id and id.find('GPS') >= 0:
+            records = placemark.findall(".//{"+rootName+"}coordinates")
 
-            n_coords = int(len(coordline) / 3)
-            new_batch = np.zeros((n_coords, 3))
+            for coord in records:
+                coordline = (coord.text.replace(",", " ")).split(' ')
 
-            # Save lat/long/alt triplets
-            for i in range(n_coords):
-                new_batch[i, 0] = float(coordline[3*i])      # Lat
-                new_batch[i, 1] = float(coordline[3*i+1])    # Long
-                new_batch[i, 2] = float(coordline[3*i+2])    # Altitude
+                n_coords = int(len(coordline) / 3)
+                new_batch = np.zeros((n_coords, 3))
 
-            coordlist = np.vstack((coordlist, new_batch))
+                # Save lat/long/alt triplets
+                for i in range(n_coords):
+                    new_batch[i, 0] = float(coordline[3*i])      # Lat
+                    new_batch[i, 1] = float(coordline[3*i+1])    # Long
+                    new_batch[i, 2] = float(coordline[3*i+2])    # Altitude
+
+                coordlist = np.vstack((coordlist, new_batch))
 
     return coordlist[1:, :]  # Skip the first line
 
 
 def prettyPlot(data):
-    # Thanks Rutger Kassies for the nice method..
+    # Thanks Rutger Kassies for the nice drawing method !
 
-    x = np.linspace(0, 1, len(data[:,1]))
-    alt = data[:,2]
+    alt = data[:, 2]
+    alt = alt[alt.nonzero()]
+    alt = np.append(alt.min(), alt)
+    x = np.linspace(0, 1, len(alt))
+    alt_bottom = np.ones((len(alt)))
+    alt_bottom *= alt.min()
 
     fig, ax = pl.subplots()
 
     # plot only the outline of the polygon, and capture the result
     poly, = ax.fill(x, alt, facecolor='none')
+    #poly = ax.fill_between(x, alt, alt.min(), facecolor='none')
 
     # get the extent of the axes
     xmin, xmax = ax.get_xlim()
@@ -76,16 +88,29 @@ def prettyPlot(data):
     # plot and clip the image
     im = ax.imshow(img_data, aspect='auto', origin='lower', cmap=pl.cm.Blues_r, extent=[xmin, xmax, ymin, ymax], vmin=alt.min(), vmax=alt.max())
     im.set_clip_path(poly)
+    #im.set_clip_path(poly.get_clip_path())
 
     # display (and save eventually ?)
     pl.show()
 
-# Get all the files in the given folder
-# TODO: Ben
+# Process one file
+def Pipeline(filename):
+    records = parse_kml(filename)
+    prettyPlot(records)
+    # Save the file ?
 
-# Get the data from the file
-filename = "/home/benjamin/Documents/Randos/Alpes/Grand Area.kml"
-records = parse_kml(filename)
+# Get all the KML files in this folder and plot
+def FolderPipeline(folder):
+    coord_ovrl = np.array([])
 
-# Plot the altitude profile
-prettyPlot(records)
+    files = glob.glob(folder + "/*.kml")
+    file_exist = False
+
+    for file in files:
+        print("Reading {}".format(file))
+        Pipeline(file)
+
+# Run for all files in folder :)
+folder = "/home/benjamin/Documents/Randos/Alpes"
+FolderPipeline(folder)
+
