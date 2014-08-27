@@ -24,6 +24,13 @@ import os
 # data = list(features[0].features())
 # placemark = data[1]
 
+
+# Compute the distance in between two angular coordinates on a sphere
+def distOnSphere(point1, point2, radius):
+    angularDist = np.sqrt(np.power(point1[0] - point2[0], 2) + np.power(point1[1] - point2[1], 2))
+
+    return angularDist * radius
+
 def parse_kml(file):
     tree = ET.parse(file).getroot()
 
@@ -61,23 +68,36 @@ def parse_kml(file):
     return coordlist[1:, :]  # Skip the first line
 
 
-def prettyPlot(data):
+def prettyPlot(data, title):
     # Thanks Rutger Kassies for the nice drawing method !
 
     alt = data[:, 2]
+    lat = data[:, 0]
+    lon = data[:, 0]
+
     alt = alt[alt.nonzero()]
-    alt = np.append(alt.min(), alt)
-    x = np.linspace(0, 1, len(alt))
-    alt_bottom = np.ones((len(alt)))
-    alt_bottom *= alt.min()
+    lat = lat[alt.nonzero()]
+    lon = lon[alt.nonzero()]
+
+    linearDist = np.zeros(np.size(alt))
+
+    for i in range(np.size(alt)):
+        if i == 0:
+            linearDist[i] = 0
+
+        else:
+            linearDist[i] = distOnSphere((lat[i], lon[i]), (lat[i-1],lon[i-1]), 6.4*10e3)
+            linearDist[i] += linearDist[i-1]
+
+    # pl.plot(linearDist, alt)
+    # pl.title(title)
+    # pl.show()
+    #
+    # pl.plot(linearDist)
+    # pl.title("Curvilign absciss")
 
     fig, ax = pl.subplots()
-
-    # plot only the outline of the polygon, and capture the result
-    poly, = ax.fill(x, alt, facecolor='none')
-    #poly = ax.fill_between(x, alt, alt.min(), facecolor='none')
-
-    # get the extent of the axes
+    poly, = ax.fill(linearDist, alt, facecolor='none')
     xmin, xmax = ax.get_xlim()
     ymin, ymax = ax.get_ylim()
 
@@ -88,15 +108,18 @@ def prettyPlot(data):
     # plot and clip the image
     im = ax.imshow(img_data, aspect='auto', origin='lower', cmap=pl.cm.Blues_r, extent=[xmin, xmax, ymin, ymax], vmin=alt.min(), vmax=alt.max())
     im.set_clip_path(poly)
-    #im.set_clip_path(poly.get_clip_path())
-
-    # display (and save eventually ?)
+    fig.suptitle(title)
+    ax.set_xticks(np.arange(xmin, xmax, 200))
+    ax.set_yticks(np.arange(ymin, ymax, 50))
+    pl.grid()
     pl.show()
 
 # Process one file
 def Pipeline(filename):
     records = parse_kml(filename)
-    prettyPlot(records)
+
+    title = filename.split('/')
+    prettyPlot(records, title[-1])
     # Save the file ?
 
 # Get all the KML files in this folder and plot
