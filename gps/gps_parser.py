@@ -71,14 +71,16 @@ def parse_kml(file):
 def prettyPlot(data, title):
     # Thanks Rutger Kassies for the nice drawing method !
 
+    # Quick failsafe : remove null entries from the files
     alt = data[:, 2]
     lat = data[:, 0]
-    lon = data[:, 0]
+    lon = data[:, 1]
 
     alt = alt[alt.nonzero()]
     lat = lat[alt.nonzero()]
     lon = lon[alt.nonzero()]
 
+    # Compute flat distance
     linearDist = np.zeros(np.size(alt))
 
     for i in range(np.size(alt)):
@@ -89,13 +91,7 @@ def prettyPlot(data, title):
             linearDist[i] = distOnSphere((lat[i], lon[i]), (lat[i-1],lon[i-1]), 6.4*10e3)
             linearDist[i] += linearDist[i-1]
 
-    # pl.plot(linearDist, alt)
-    # pl.title(title)
-    # pl.show()
-    #
-    # pl.plot(linearDist)
-    # pl.title("Curvilign absciss")
-
+    # Actual drawings.. complicated by the blue shading
     fig, ax = pl.subplots()
     poly, = ax.fill(linearDist, alt, facecolor='none')
     xmin, xmax = ax.get_xlim()
