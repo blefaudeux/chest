@@ -34,12 +34,14 @@ def distOnSphere(point1, point2, radius):
 def parse_kml(file):
     tree = ET.parse(file).getroot()
 
-    rootName = "http://earth.google.com/kml/2.2"
+    nameRaw = tree.tag
+
+    rootName = nameRaw[1:-4]  # "http://earth.google.com/kml/2.2"
     placemarkList = list(tree.findall(".//{"+rootName+"}Placemark"))
 
-    if len(placemarkList) == 0:  # Use a while loop here
-        rootName = "http://www.opengis.net/kml/2.2"
-        placemarkList = list(tree.findall(".//{"+rootName+"}Placemark"))
+    # if len(placemarkList) == 0:  # Use a while loop here
+    #     rootName = "http://www.opengis.net/kml/2.2"
+    #     placemarkList = list(tree.findall(".//{"+rootName+"}Placemark"))
 
     coordlist = np.zeros((1, 3))
 
@@ -114,9 +116,9 @@ def prettyPlot(data, title):
 def Pipeline(filename):
     records = parse_kml(filename)
 
-    title = filename.split('/')
-    prettyPlot(records, title[-1])
-    # Save the file ?
+    if np.size(records) > 0:
+        title = filename.split('/')
+        prettyPlot(records, title[-1])
 
 # Get all the KML files in this folder and plot
 def FolderPipeline(folder):
