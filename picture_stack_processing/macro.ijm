@@ -58,8 +58,6 @@ function processDirectory( dir ) {
     path = getInfo("image.directory") + File.separator + "8bits_" +getInfo("image.filename");
     saveAs("Tiff", path);
   }
- 
-  setBatchMode(false);
 }
 
 
@@ -69,8 +67,16 @@ function processAll(root_dir)
   setOption("display labels", true);
   setBatchMode(true);
   
-  dir_list = getDirectoryList(root_dir);
-  processDirectory(dir_list);
+  list = getFileList(root_dir);
+  
+  for (i=0; i< list.length; i++)
+  {
+      if (File.isDirectory(list[i]))
+      {
+	 processDirectory(list[i]);
+      }
+  }
+   
   setBatchMode(false);
 }
 
