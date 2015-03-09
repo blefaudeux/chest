@@ -8,7 +8,7 @@ dynamic_friction = 0.01
 wheel = spinwheel.SpinWheel(static_friction, dynamic_friction)
 
 # Craft a simulated behaviour
-iterations = 200
+iterations = 300
 times = np.arange(iterations)
 wheelspeed = np.zeros(iterations)
 torque_input = np.zeros(iterations)
@@ -18,10 +18,8 @@ for i in range(period):
     torque_input[i] = np.sin(float(i/period * 3.14))
 
 for i in range(period):
-    torque_input[period+i] = -np.sin(float(i/period * 3.14))
+    torque_input[3*period+i] = -np.sin(float(i/period * 3.14))
 
-for i in range(period):
-    torque_input[2*period+i] = 0.4
 
 # Simulate
 for time in times:

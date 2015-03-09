@@ -12,7 +12,7 @@ class SpinWheel:
         sign = np.sign(self._currentSpeed)
 
         # Prevent numerical instability
-        if self._currentSpeed < self._staticFriction:
+        if np.abs(self._currentSpeed) < self._staticFriction:
             current_static_friction = 0
         else:
             current_static_friction = self._staticFriction
