@@ -20,11 +20,9 @@ function getMax(a, b) {
   }
 }
 
-function processDirectory( dir ) {
+function processDirectory( dir, min1, max1, min2, max2, min3, max3 ) {
  
   print("Processing directory " + dir);
-  desiredMin = getNumber("Black level ? (-1 if automatic)", -1);
-  desiredMax = getNumber("White level ? ", 1000);
   
   list = getFileList(dir);
     
@@ -36,32 +34,15 @@ function processDirectory( dir ) {
     }
   }
   
-  // Get the min/max values of the opened pictures
-  if (desiredMin > -1)
-  {
-     overallMin = 4096;
-     overallMax = 0;
+  min = newArray(min1, min2, min3);
+  max = newArray(max1, max2, max3);
   
-     for (i = 1; i <= nImages; i++) {
-       selectImage(i);
-       getRawStatistics(dummy, mean, min, max, dummy, dummy2);
-       overallMin = getMin( overallMin, min);
-       overallMax = getMax( overallMax, max);
-     }
-  
-     print("Overall min/max : " + overallMin + " " + overallMax);
-  }
-  else
-  {
-   overallMin = desiredMin;
-   overallMax = desiredMax;
-  }
   
   // Bring all the pictures down to 8-bits, and save them :
   for (i = 1; i <= nImages; i++) {
     selectImage(i);
     
-    setMinAndMax(overallMin, overallMax);
+    setMinAndMax(min[i], max[i]);
     run("8-bit");
     title = getTitle();
     path = getInfo("image.directory") + File.separator + "8bits_" +getInfo("image.filename");
@@ -114,6 +95,17 @@ function processAll(root_dir)
   run("Close All");  
   setOption("display labels", true);
   setBatchMode(true);
+
+  min1 = getNumber("First channel : black level ? ", 100);
+  max1 = getNumber("First channel : white level ? ", 1000);
+  
+  min2 = getNumber("Second channel : black level ? ", 100);
+  max2 = getNumber("Second channel : white level ? ", 1000);
+  
+  min3 = getNumber("Third channel : black level ? ", 100);
+  max3 = getNumber("Third channel : white level ? ", 1000);
+  
+  keep_values = getString("Would you like to keep these values for all folders ? (yes/no)", "yes");
   
   list = getFileList(root_dir);
   
@@ -121,7 +113,19 @@ function processAll(root_dir)
   {
       if (File.isDirectory( root_dir + list[i]))
       {
-         processDirectory( root_dir + list[i]);
+	if (keep_values != "yes")
+	{
+	  min1 = getNumber("First channel : black level ? ", 100);
+	  max1 = getNumber("First channel : white level ? ", 1000);
+	  
+	  min2 = getNumber("Second channel : black level ? ", 100);
+	  max2 = getNumber("Second channel : white level ? ", 1000);
+	  
+	  min3 = getNumber("Third channel : black level ? ", 100);
+	  max3 = getNumber("Third channel : white level ? ", 1000);
+	}
+      
+         processDirectory( root_dir + list[i], min1, max1, min2, max2, min3, max3);
       }
   }
    
