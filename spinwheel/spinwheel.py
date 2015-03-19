@@ -27,57 +27,57 @@ class SpinWheel:
 # Same principle, but using a manually defined curve shape
 class SmoothSpinning:
     def __init__(self, rise_time, stop_time, brake_time):
-        self._rise_time = rise_time/2     # The characteristic time for the free wheel stop
-        self._stop_time = stop_time     # The characteristic time for the free wheel stop
-        self._brake_time = brake_time   # The characteristic time when 'braking' (reversed input)
-        self._currentSpeed = 0.
+        self._riseTime = rise_time/2        # The characteristic time for the free wheel acceleration
+        self._stopTime = stop_time          # The characteristic time for the free wheel stop
+        self._brakeTime = brake_time        # The characteristic time when 'braking' (reversed input)
+        self._currentSpeed = 0.             # Speed in the different motions..
         self._stopSpeed = 0.
         self._brakeSpeed = 0.
-        self._timeStart = 0.
-        self._timeStop = 0.
-        self._timeBrake = 0.
-        self._stopThreshold = 0.01
+        self._counterStart = 0.             # Counter for the 'rise/stop/brake' procedures
+        self._counterStop = 0.
+        self._counterBrake = 0.
+        self._stopThreshold = 0.01          # Stop when speed is below this point
 
     def sigmoid_update(self):
-        if (self._timeStop > 0. or self._timeBrake > 0.) and self._currentSpeed > 0.:
+        if (self._counterStop > 0. or self._counterBrake > 0.) and self._currentSpeed > 0.:
             # We were in another procedure, start from here
-            self._timeStart = -np.log(max(0.01, -np.log(np.abs(self._currentSpeed)))) * self._rise_time
-            self._timeStart += 6*self._rise_time
+            self._counterStart = -np.log(max(0.01, -np.log(np.abs(self._currentSpeed)))) * self._riseTime
+            self._counterStart += 6*self._riseTime
 
-        self._currentSpeed = 1/(1 + np.exp(-(self._timeStart - 6*self._rise_time)/self._rise_time))
-        self._timeStart += 1.
+        self._currentSpeed = 1/(1 + np.exp(-(self._counterStart - 6*self._riseTime)/self._riseTime))
+        self._counterStart += 1.
 
         # Reset the stop & brake procedures
-        self._timeStop = 0.
-        self._timeBrake = 0.
+        self._counterStop = 0.
+        self._counterBrake = 0.
 
     def sigmoid_stop(self):
-        if self._timeStop == 0.:
+        if self._counterStop == 0.:
             self._stopSpeed = self._currentSpeed
 
-        self._currentSpeed = self._stopSpeed * np.exp(- self._timeStop / self._stop_time)
+        self._currentSpeed = self._stopSpeed * np.exp(- self._counterStop / self._stopTime)
 
         if np.abs(self._currentSpeed) < self._stopThreshold:
             self._currentSpeed = 0.
 
-        self._timeStop += 1.
+        self._counterStop += 1.
 
     def sigmoid_brake(self):
-        if self._timeBrake == 0.:
+        if self._counterBrake == 0.:
             self._brakeSpeed = self._currentSpeed
 
-        self._currentSpeed = self._brakeSpeed * np.exp(- self._timeBrake / self._brake_time)
+        self._currentSpeed = self._brakeSpeed * np.exp(- self._counterBrake / self._brakeTime)
 
         if np.abs(self._currentSpeed) < self._stopThreshold:
             self._currentSpeed = 0.
 
-        self._timeBrake += 1.
+        self._counterBrake += 1.
 
     def update(self, direction):
 
         if np.abs(self._currentSpeed) == 0.:
             # Start a brand new sigmoid
-            self._timeStart = 0.
+            self._counterStart = 0.
             self.sigmoid_update()
             self._currentSpeed *= np.sign(direction)
 
