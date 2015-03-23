@@ -84,7 +84,7 @@ function processDirectory( dir, min, max ) {
       File.delete(path);
   }
   
-  print("Writing picture : " + "fused_" + dirName)
+  print("Writing picture : " + "fused_" + dirName);
   saveAs("Tiff", path);
   
   run("Close All"); 
