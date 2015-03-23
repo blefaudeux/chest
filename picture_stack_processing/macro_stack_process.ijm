@@ -27,10 +27,11 @@ function processDirectory( dir, min1, max1, min2, max2, min3, max3 ) {
   list = getFileList(dir);
     
   // Open all the pictures
-  for (i=0; i<list.length; i++) {
-    if (endsWith(list[i], "tif") && !startsWith(list[i], "8bits"))
+  for (i=1; i<list.length; i++) {
+    if (endsWith(list[i], "tif") && !startsWith(list[i], "8bits") && !startsWith(list[i], "fused"))
     {
       open(dir + list[i]);
+      print("Opening picture " + dir + list[i]);
     }
   }
   
