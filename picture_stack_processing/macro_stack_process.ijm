@@ -20,7 +20,7 @@ function getMax(a, b) {
   }
 }
 
-function processDirectory( dir, min1, max1, min2, max2, min3, max3 ) {
+function processDirectory( dir, min, max ) {
  
   print("Processing directory " + dir);
   
@@ -28,14 +28,12 @@ function processDirectory( dir, min1, max1, min2, max2, min3, max3 ) {
     
   // Open all the pictures
   for (i=0; i<list.length; i++) {
-    if (endsWith(list[i], "tif") && !startsWith(list[i], "8bits"))
+    if (endsWith(list[i], "tif") && !startsWith(list[i], "8bits") && !startsWith(list[i], "fused"))
     {
+      print("Opening picture : " + list[i]);
       open(dir + list[i]);
     }
   }
-  
-  min = newArray(min1, min2, min3);
-  max = newArray(max1, max2, max3);
   
   
   // Bring all the pictures down to 8-bits, and save them :
@@ -45,45 +43,48 @@ function processDirectory( dir, min1, max1, min2, max2, min3, max3 ) {
     setMinAndMax(min[i], max[i]);
     run("8-bit");
     title = getTitle();
+    
+    // Remove existing files if needed
     path = getInfo("image.directory") + File.separator + "8bits_" +getInfo("image.filename");
+    
+    if(File.exists(path))
+    {
+      File.delete(path);
+    }    
+    
+    print("Writing picture : " + "8bits_" + getInfo("image.filename"));
     saveAs("Tiff", path);
   }
   
   // Convert the stack to RGB..
+  colours = newArray("Red", "Green", "Blue", "Fire", "Cyan" );
+  
   for (i = 1; i <= nImages; i++) {
     selectImage(i);
-    if( i == 1)
-    {
-      run("Red");
-    }
     
-    if( i == 2)
-    {
-      run("Green");
-    }
-    
-    if( i == 3)
-    {
-      run("Blue");
-    }
-    
-    if( i == 4)
-    {
-      run("Fire");
-    }
-
-    if( i == 5)
-    {
-      run("Cyan");
-    }
+    // Give a colour cast
+    run( colours[i] );
       
+    // Make the picture RGB
     run("RGB Color");
   }
   
+  projectionTypes = newArray("Max Intensity", "Min Intensity", "Average Intensity", "Sum Slices", "Standard Deviation", "Median"); 
+  
   run("Images to Stack", "name=Coloured fuse");
+  // run("Z Project...","start=1 stop="+nImages+" projection=Median");
   run("Z Project...");
   
-  path = dir + File.separator + "fused";
+  dirName = File.getName(dir); 
+  path = dir + File.separator + "fused_" + dirName;
+  
+  // Remove existing file if needed
+  if(File.exists(path))
+  {
+      File.delete(path);
+  }
+  
+  print("Writing picture : " + "fused_" + dirName)
   saveAs("Tiff", path);
   
   run("Close All"); 
@@ -96,14 +97,17 @@ function processAll(root_dir)
   setOption("display labels", true);
   setBatchMode(true);
 
-  min1 = getNumber("First channel : black level ? ", 100);
-  max1 = getNumber("First channel : white level ? ", 1000);
+  min = newArray(0,0,0)
+  max = newArray(0,0,0)
   
-  min2 = getNumber("Second channel : black level ? ", 100);
-  max2 = getNumber("Second channel : white level ? ", 1000);
+  min[0] = getNumber("First channel : black level ? ", 100);
+  max[0] = getNumber("First channel : white level ? ", 1000);
   
-  min3 = getNumber("Third channel : black level ? ", 100);
-  max3 = getNumber("Third channel : white level ? ", 1000);
+  min[1] = getNumber("Second channel : black level ? ", 100);
+  max[1] = getNumber("Second channel : white level ? ", 1000);
+  
+  min[2] = getNumber("Third channel : black level ? ", 100);
+  max[2] = getNumber("Third channel : white level ? ", 1000);
   
   keep_values = getString("Would you like to keep these values for all folders ? (yes/no)", "yes");
   
@@ -115,20 +119,20 @@ function processAll(root_dir)
       {
 	if (keep_values != "yes")
 	{
-	  min1 = getNumber("First channel : black level ? ", 100);
-	  max1 = getNumber("First channel : white level ? ", 1000);
+	  min[0] = getNumber("First channel : black level ? ", 100);
+	  max[0] = getNumber("First channel : white level ? ", 1000);
 	  
-	  min2 = getNumber("Second channel : black level ? ", 100);
-	  max2 = getNumber("Second channel : white level ? ", 1000);
+	  min[1] = getNumber("Second channel : black level ? ", 100);
+	  max[1] = getNumber("Second channel : white level ? ", 1000);
 	  
-	  min3 = getNumber("Third channel : black level ? ", 100);
-	  max3 = getNumber("Third channel : white level ? ", 1000);
+	  min[2] = getNumber("Third channel : black level ? ", 100);
+	  max[2] = getNumber("Third channel : white level ? ", 1000);
 	}
       
-         processDirectory( root_dir + list[i], min1, max1, min2, max2, min3, max3);
+         processDirectory( root_dir + list[i], min, max);
       }
   }
-   
+  
   setBatchMode(false);
 }
 
