@@ -35,12 +35,11 @@ function processDirectory( dir, min, max ) {
     }
   }
   
-  
   // Bring all the pictures down to 8-bits, and save them :
   for (i = 1; i <= nImages; i++) {
     selectImage(i);
     
-    setMinAndMax(min[i], max[i]);
+    setMinAndMax(min[i-1], max[i-1]);
     run("8-bit");
     title = getTitle();
     
@@ -63,7 +62,7 @@ function processDirectory( dir, min, max ) {
     selectImage(i);
     
     // Give a colour cast
-    run( colours[i] );
+    run( colours[i-1] );
       
     // Make the picture RGB
     run("RGB Color");
