@@ -51,6 +51,6 @@ tree = etree.parse('lbpcascade_frontalface.xml')
 rotateLBPStage(tree)
 rotateLBPFeature(tree)
 
-tree.write('rotated_cascade.xml')
+tree.write('lbpcascade_frontalface_rotated.xml')
 
 
