@@ -17,11 +17,11 @@ def rotateLBPStage(inputTree):
             c = [item for item in text if (item != '' and item != '\n')]
 
             # Naive rotation, let's see whether this works..
-            rotated_text = [c[0], c[1], c[2], c[5], c[7], c[10], c[4], c[9], c[3], c[6], c[8]]
+            rotated_text = [c[0], c[1], c[2], c[5], c[6], c[7], c[8], c[9], c[10], c[3], c[4]]
 
             # Crush the values
             node.text = ""
-            for n in rotated_text:
+            for n in c:		# rotated_text
                 node.text += " " + str(n)
 
 
@@ -37,7 +37,7 @@ def rotateLBPFeature(inputTree):
         c = [item for item in text if (item != '' and item != '\n')]
 
         # The two first values are the rectangle initial coordinates, the two last its extend (width and height)
-        rotated_text = [c[1], width-int(c[0])-int(c[2]), c[3], c[2]]
+        rotated_text = [c[1], width-int(c[0])-int(c[2])-1, c[3], c[2]]
 
         # Crush the values
         rect.text = " "
@@ -51,6 +51,7 @@ tree = etree.parse('lbpcascade_frontalface.xml')
 rotateLBPStage(tree)
 rotateLBPFeature(tree)
 
-tree.write('lbpcascade_frontalface_rotated.xml')
+# Save the file (with the xml declaration)
+tree.write('lbpcascade_frontalface_rotated.xml', xml_declaration=True, encoding="utf-8")
 
-
+# FIXME: ET saves the declaration with single quotes instead of double quotes
