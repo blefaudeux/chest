@@ -104,7 +104,6 @@ for direction in directions :
     rotateLBPFeature(tree, direction)
     filename = 'rotated_cascade_' + direction + '.xml'
     tree.write(filename, xml_declaration=True, encoding="utf-8")
-    del tree
 
     # Fix an annoying ET bug : replace single quotes by double quotes in the saved file
     f = open(filename, 'r')
