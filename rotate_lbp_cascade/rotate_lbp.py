@@ -76,18 +76,18 @@ def rotateLBPFeature(inputTree, direction='270'):
     for rect in features:
         old_text = rect.text
         parsedValues = re.split(' |\n', old_text)
-        c = [item for item in parsedValues if (item != '' and item != '\n')]
+        c = [int(item) for item in parsedValues if (item != '' and item != '\n')]
 
         # The two first values are the rectangle initial coordinates, the two last its extend (width and height)
         rotated_text = []
         if direction == '270':
-            rotated_text = [c[1], width-int(c[0])-3*int(c[2]), c[3], c[2]]
+            rotated_text = [c[1], width-c[0]-3*c[2], c[3], c[2]]
 
         elif direction == '90':
-            rotated_text = [height-c[1]-3*int(c[3]), c[0], c[3], c[2]]
+            rotated_text = [height-c[1]-3*c[3], c[0], c[3], c[2]]
 
         elif direction == '180':
-            rotated_text = [width-c[0]-3*int(c[2]), height-int(c[1])-3*int(c[3]), c[2], c[3]]
+            rotated_text = [width-c[0]-3*c[2], height-c[1]-3*c[3], c[2], c[3]]
 
         else:
             print("Unsupported transformation")
@@ -129,7 +129,7 @@ for orientation in directions:
     rotateLBPStage(tree, orientation)
     rotateLBPFeature(tree, orientation)
 
-    tree.set('cascade/orientation', orientation)
+    # tree.append('cascade/orientation', orientation)
 
     filename = initialFile + '_' + orientation + '.xml'
     saveTree(tree, filename)
