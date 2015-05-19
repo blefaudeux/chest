@@ -4,6 +4,7 @@ import xml.etree.ElementTree as etree
 import numpy as np
 import re
 
+# Rotate stages and features in place. Rotation is in degrees, clockwise
 
 # Ref : http://w3facility.org/question/understanding-opencv-lbp-implementation/
 def rotateLBPStage(inputTree, direction='270'):
@@ -65,7 +66,7 @@ def rotateLBPStage(inputTree, direction='270'):
                 node.text += " " + str(n)
 
 
-def rotateLBPFeature(inputTree, direction='left'):
+def rotateLBPFeature(inputTree, direction='270'):
     width = int(inputTree.find("cascade/width").text)
     height = int(inputTree.find("cascade/height").text)
 
@@ -118,16 +119,18 @@ def saveTree(_tree, _filename):
     f_fixed.write(text)
     f_fixed.close()
 
-# Rotate stages and features in place. Rotation is in degrees, clockwise
 # Load the original xml file
-tree = etree.parse('lbpcascade_frontalface.xml')
+initialFile = 'lbpcascade_frontalface'
 
+tree = etree.parse(initialFile+'.xml')
 directions = ['90', '180', '270']
-for direct in directions:
-    print("Rotating cascade to " + direct + " degrees")
-    rotateLBPStage(tree, direct)
-    rotateLBPFeature(tree, direct)
+for orientation in directions:
+    print("Rotating cascade to " + orientation + " degrees")
+    rotateLBPStage(tree, orientation)
+    rotateLBPFeature(tree, orientation)
 
-    filename = 'rotated_cascade_' + direct + '.xml'
+    tree.set('cascade/orientation', orientation)
+
+    filename = initialFile + '_' + orientation + '.xml'
     saveTree(tree, filename)
     print("... " + filename + " saved\n")

@@ -5,6 +5,7 @@
   <featureType>LBP</featureType>
   <height>24</height>
   <width>24</width>
+  <orientation>90</orientation>
   <stageParams>
     <boostType>GAB</boostType>
     <minHitRate>0.9950000047683716</minHitRate>
