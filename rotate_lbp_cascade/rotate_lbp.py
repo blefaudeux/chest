@@ -20,7 +20,6 @@ def rotateLBPStage(inputTree, direction='270'):
 
             weights = [128, 64, 32, 16, 8, 4, 2, 1]
 
-            rotated_text = []
             d = []
 
             if direction == '270':
@@ -84,12 +83,10 @@ def rotateLBPFeature(inputTree, direction='left'):
             rotated_text = [c[1], width-int(c[0])-3*int(c[2]), c[3], c[2]]
 
         elif direction == '90':
-            # to be fixed
-            rotated_text = [c[1], width-int(c[0])-3*int(c[2]), c[3], c[2]]
+            rotated_text = [height-c[1]-3*int(c[3]), c[0], c[3], c[2]]
 
         elif direction == '180':
-            # to be fixed
-            rotated_text = [c[1], width-int(c[0])-3*int(c[2]), c[3], c[2]]
+            rotated_text = [width-c[0]-3*int(c[2]), height-int(c[1])-3*int(c[3]), c[2], c[3]]
 
         else:
             print("Unsupported transformation")
@@ -108,26 +105,29 @@ def rotateLBPFeature(inputTree, direction='left'):
         height_ref[0].text = str(width)
 
 
+def saveTree(_tree, _filename):
+    _tree.write(_filename, xml_declaration=True, encoding="utf-8")
+
+    # Fix an annoying ET bug : replace single quotes by double quotes in the saved file
+    f = open(_filename, 'r')
+    text = f.read()
+    f.close()
+
+    f_fixed = open(_filename, 'w')
+    text = re.sub("\'", '"', text)
+    f_fixed.write(text)
+    f_fixed.close()
+
+# Rotate stages and features in place. Rotation is in degrees, clockwise
 # Load the original xml file
 tree = etree.parse('lbpcascade_frontalface.xml')
 
-# Rotate stages and features in place
 directions = ['90', '180', '270']
 for direct in directions:
     print("Rotating cascade to " + direct + " degrees")
     rotateLBPStage(tree, direct)
     rotateLBPFeature(tree, direct)
+
     filename = 'rotated_cascade_' + direct + '.xml'
-    tree.write(filename, xml_declaration=True, encoding="utf-8")
-
-    # Fix an annoying ET bug : replace single quotes by double quotes in the saved file
-    f = open(filename, 'r')
-    text = f.read()
-    f.close()
-
-    f_fixed = open(filename, 'w')
-    text = re.sub("\'", '"', text)
-    f_fixed.write(text)
-    f_fixed.close()
-    
-    print(".." + filename + " saved\n")
+    saveTree(tree, filename)
+    print("... " + filename + " saved\n")
