@@ -14,8 +14,9 @@ for (dirpath, dirnames, filenames) in os.walk("."):
     break
 
 for file in f:
-    if file[-3:] == 'png':
+    if file[-3:] == 'png' or file[-3:] == 'jpg':
         break
+print("Loading" + file)
 
 img = cv2.imread(file)
 
