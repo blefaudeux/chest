@@ -122,15 +122,18 @@ def saveTree(_tree, _filename):
 # Load the original xml file
 initialFile = 'lbpcascade_frontalface'
 
-tree = etree.parse(initialFile+'.xml')
 directions = ['90', '180', '270']
 for orientation in directions:
     print("Rotating cascade to " + orientation + " degrees")
-    rotateLBPStage(tree, orientation)
+    tree = etree.parse(initialFile+'.xml')
+    # rotateLBPStage(tree, orientation)
     rotateLBPFeature(tree, orientation)
 
-    # tree.append('cascade/orientation', orientation)
+    cascade = tree.find("cascade")
+    cascade.append(etree.fromstring("<orientation>" + orientation + "</orientation>"))
 
     filename = initialFile + '_' + orientation + '.xml'
     saveTree(tree, filename)
     print("... " + filename + " saved\n")
+    
+    del tree
