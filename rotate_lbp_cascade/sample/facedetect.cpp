@@ -12,7 +12,7 @@
  void detectAndDisplay( Mat frame );
 
  /** Global variables */
- String face_cascade_name = "lbpcascade_frontalface_rotated.xml";
+ String face_cascade_name = "lbpcascade_frontalface_270.xml";
  CascadeClassifier face_cascade;
  string window_name = "Capture - Face detection";
  RNG rng(12345);
