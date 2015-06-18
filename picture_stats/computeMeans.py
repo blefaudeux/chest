@@ -21,8 +21,9 @@ for infile in glob.glob("*.bmp"):
 
 # Write a text file, just in case
 file = open("report.txt", "w")
+file.write("Picture Mean Median\n")
 for item in report:
-    file.write("Picture " + item[0] + " : mean " + str(item[1]) + ", median " + str(item[2]) + "\n")
+    file.write(item[0] + ", " + str(item[1]) + ",  " + str(item[2]) + "\n")
 file.close()
 
 
