@@ -5,9 +5,16 @@ import fastcluster as fc
 import scipy.cluster.hierarchy as sch
 from scipy.cluster.hierarchy import dendrogram, set_link_color_palette
 
-def log_mean(logval):
-    expval = np.exp2(logval)
-    return np.log2(np.mean(expval))
+
+def log_mean(log_values):
+    exp_values = np.exp2(log_values)
+    return np.log2(np.mean(exp_values))
+
+# Some settings
+plot_fulldata = False
+plot_dendrogram = False
+plot_clusters = True
+n_clusters = 10
 
 # ----------------------------------------------------------
 # Load the file into an array, can be indexed by names
@@ -15,7 +22,7 @@ filename = "marie.mc.group.limma.txt"
 raw_data = pd.read_table(filename)
 
 # Available indexes :
-print("File {} loaded. \n Available fields are : {}\n".format(filename, raw_data.columns))
+print("File {} loaded. \nAvailable fields are : {}\n".format(filename, raw_data.columns))
 
 # You can access the columns directly using the label, or using the name as a field
 # ex : raw_data['GeneName'], or raw_data.GeneName
@@ -51,13 +58,12 @@ for col in range(n_real_experiments):
     clipped_data[new_name] = clipped_data.iloc[:, col_start:col_end].apply(log_mean, axis=1)
 
 # Plot those values over time for a start
-# clipped_data[avg_experiments].T.plot()
-# plt.show()
+if plot_fulldata:
+    clipped_data[avg_experiments].T.plot()
+    plt.show()
 
 # ----------------------------------------------------------
 # Try to cluster the data :
-n_clusters = 20
-
 # - define clustering method and metric
 method = 'complete'
 metric = 'euclidean'  # metric: define here
@@ -67,13 +73,19 @@ clust_total = fc.linkage(clipped_data[avg_experiments], method=method, metric=me
 
 # - crop dendrogram to n clusters, all of them are available if needed
 short_clust = sch.fcluster(clust_total, n_clusters, criterion='maxclust')
-dendrogram(clust_total)
-plt.show()
+
+if plot_dendrogram:
+    dendrogram(clust_total, p=n_clusters)
+    plt.show()
 
 # - get back to Panda
 clipped_data["k_index"] = pd.Series(short_clust, index=clipped_data[avg_experiments].index)
 
 # - Get some plots to check that we got something interesting
-groups = clipped_data.groupby('k_index')
-groups[avg_experiments].plot()
-plt.show()
+if plot_clusters:
+    for cluster in range(n_clusters):
+        subset = clipped_data[clipped_data['k_index'] == cluster + 1]
+        figure = plt.plot(subset[avg_experiments].values.T)
+        plt.xticks(labels=avg_experiments)
+        plt.legend(labels=subset['GeneName'].values)
+        plt.show()
