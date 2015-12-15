@@ -10,11 +10,12 @@ def log_mean(log_values):
     exp_values = np.exp2(log_values)
     return np.log2(np.mean(exp_values))
 
+
 # Some settings
 plot_fulldata = False
 plot_dendrogram = False
 plot_clusters = True
-n_clusters = 10
+n_clusters = 50
 
 # ----------------------------------------------------------
 # Load the file into an array, can be indexed by names
@@ -86,6 +87,6 @@ if plot_clusters:
     for cluster in range(n_clusters):
         subset = clipped_data[clipped_data['k_index'] == cluster + 1]
         figure = plt.plot(subset[avg_experiments].values.T)
-        plt.xticks(labels=avg_experiments)
+        # plt.xticks(labels=avg_experiments)
         plt.legend(labels=subset['GeneName'].values)
         plt.show()
