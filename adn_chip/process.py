@@ -48,7 +48,7 @@ avg_experiments = []
 n_real_experiments = int(len(experiments)/3)
 
 for col in range(n_real_experiments):
-    new_name = "Aggregate_" + experiments[3 * col].split('_')[1]
+    new_name = "Exp_" + experiments[3 * col].split('_')[1]
     new_name += "__" + experiments[3 * col + 1].split('_')[1]
     new_name += "__" + experiments[3 * col + 2].split('_')[1]
     avg_experiments.append(new_name)
@@ -87,6 +87,6 @@ if plot_clusters:
     for cluster in range(n_clusters):
         subset = clipped_data[clipped_data['k_index'] == cluster + 1]
         figure = plt.plot(subset[avg_experiments].values.T)
-        # plt.xticks(labels=avg_experiments)
+        plt.xticks(np.arange(len(avg_experiments)), avg_experiments, rotation=25)
         plt.legend(labels=subset['GeneName'].values)
         plt.show()
