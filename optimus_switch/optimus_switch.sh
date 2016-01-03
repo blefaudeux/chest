@@ -1,24 +1,57 @@
-#!/bin/sh
+#!/bin/bash
 
 # Query the current state, and flip it
-# TODO: Ben
+STATUS=$(glxinfo | grep "OpenGL vendor" | cut -d: -f2)
+echo "Current status : using ${STATUS}"
 
-# Change the SDDM status
-echo "Setting up SDDM..."
-sudo mv /usr/share/sddm/scripts/Xsetup.nvidia 
-/usr/share/sddm/scripts/XSetup
-echo "Done"
+echo "Do you want to switch cards ?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) break;;
+        No ) echo "Not switching" exit;;
+    esac
+done
 
-# Install the nvidia libs
-echo "Setting up GL libs.."
-yaourt -Sy nvidia-libgl lib32-nvidia-libgl
 
-# Install the mesa libs
-#yaourt -Sy mesa-libgl lib32-mesa-libgl
-echo "Done"
+function switch_nvidia {
+    echo "Setting up SDDM..."
+    sudo mv /usr/share/sddm/scripts/Xsetup.nvidia /usr/share/sddm/scripts/XSetup
+    echo "Done"
 
-# Install the Xorg config
-echo "Setting up Xorg"
-sudo mv /etc/X11/xorg.conf.nvidia /etc/X11/xorg.conf
+    # Install the nvidia libs
+    echo "Setting up GL libs.."
+    yaourt -Sy nvidia-libgl lib32-nvidia-libgl
+    echo "Done"
 
-echo "Done"
+    # Install the Xorg config
+    echo "Setting up Xorg"
+    sudo mv /etc/X11/xorg.conf.nvidia /etc/X11/xorg.conf
+    echo "Done"
+}
+
+function switch_intel {
+    echo "Setting up SDDM.."
+    sudo mv /usr/share/sddm/scripts/Xsetup.intel /usr/share/sddm/scripts/XSetup
+    echo "Done"
+    
+    echo "Setting up GL libs.."
+    yaourt -Sy mesa-libgl lib32-mesa-libgl
+    echo "Done"
+
+    # Install the Xorg config
+    echo "Setting up Xorg"
+    sudo mv --backup=t /etc/X11/xorg.conf /etc/X11/ 
+    echo "Done"
+}
+
+# Explain which card will be used from now on, and apply
+IS_INTEL=$(echo ${STATUS} | grep "Intel")
+if [ -n "${IS_INTEL}" ]; 
+    then
+        echo "Switching to NVIDIA card"
+        switch_nvidia
+    
+    else
+        echo "Switching to INTEL card"
+        switch_intel
+fi
