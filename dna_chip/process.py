@@ -5,7 +5,6 @@ import fastcluster as fc
 import scipy.cluster.hierarchy as sch
 from scipy.cluster.hierarchy import dendrogram, set_link_color_palette
 
-
 def log_mean(log_values):
     exp_values = np.exp2(log_values)
     return np.log2(np.mean(exp_values))
@@ -44,23 +43,20 @@ clipped_data = raw_data[raw_data['STD'] > threshold]
 clipped_data = clipped_data.dropna()  # We also get rid of all the rows with missing data
 
 # - compute the triplicat means by 3 columns :
-avg_experiments = []
 n_real_experiments = int(len(experiments)/3)
 
-for col in range(n_real_experiments):
-    new_name = "Exp_" + experiments[3 * col].split('_')[1]
-    new_name += "__" + experiments[3 * col + 1].split('_')[1]
-    new_name += "__" + experiments[3 * col + 2].split('_')[1]
-    avg_experiments.append(new_name)
+exp_names = ['WT_6h', 'KO_0h', 'KO_6h', 'WT_0h', 'WT_1h', 'WT_2h']
+experiments_sorted = ['WT_0h', 'WT_1h', 'WT_2h', 'WT_6h', 'KO_0h', 'KO_6h']
 
-    col_start = 1+3*col
+for i in range(n_real_experiments):
+    col_start = 1+3*i
     col_end = col_start+3
 
-    clipped_data[new_name] = clipped_data.iloc[:, col_start:col_end].apply(log_mean, axis=1)
+    clipped_data[exp_names[i]] = clipped_data.iloc[:, col_start:col_end].apply(log_mean, axis=1)
 
 # Plot those values over time for a start
 if plot_fulldata:
-    clipped_data[avg_experiments].T.plot()
+    clipped_data[experiments_sorted].T.plot()
     plt.show()
 
 # ----------------------------------------------------------
@@ -70,7 +66,7 @@ method = 'complete'
 metric = 'euclidean'  # metric: define here
 
 # - run the hierarchical clustering
-clust_total = fc.linkage(clipped_data[avg_experiments], method=method, metric=metric)
+clust_total = fc.linkage(clipped_data[experiments_sorted], method=method, metric=metric)
 
 # - crop dendrogram to n clusters, all of them are available if needed
 short_clust = sch.fcluster(clust_total, n_clusters, criterion='maxclust')
@@ -80,13 +76,15 @@ if plot_dendrogram:
     plt.show()
 
 # - get back to Panda
-clipped_data["k_index"] = pd.Series(short_clust, index=clipped_data[avg_experiments].index)
+clipped_data["k_index"] = pd.Series(short_clust, index=clipped_data[experiments_sorted].index)
 
 # - Get some plots to check that we got something interesting
 if plot_clusters:
     for cluster in range(n_clusters):
         subset = clipped_data[clipped_data['k_index'] == cluster + 1]
-        figure = plt.plot(subset[avg_experiments].values.T)
-        plt.xticks(np.arange(len(avg_experiments)), avg_experiments, rotation=25)
-        plt.legend(labels=subset['GeneName'].values)
+
+        for i in range(len(subset['GeneName'].values)):
+            plt.plot(subset[experiments_sorted].values[i,:],label=subset['GeneName'].values[i])
+        plt.legend()
+        plt.xticks(np.arange(len(experiments_sorted)), experiments_sorted, rotation=25)
         plt.show()
