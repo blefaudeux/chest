@@ -17,8 +17,10 @@ def fold_change(values):
 # Some settings
 plot_fulldata = False
 plot_dendrogram = False
-plot_clusters = True
-n_clusters = 50
+plot_clusters = False
+plot_lgr5_cluster = True
+
+n_clusters = 20
 expression_change_threshold = 0.05  # We pick the 5% of the genes which move the most
 folded_change_threshold =  0.25
 exp_names = ['WT_6h', 'KO_0h', 'KO_6h', 'WT_0h', 'WT_1h', 'WT_2h']      # Used to compute triplicates
@@ -115,6 +117,17 @@ if plot_clusters:
 
         for i in range(len(subset['GeneName'].values)):
             plt.plot(subset[exp_sorted].values[i, :], label=subset['GeneName'].values[i])
+        plt.legend()
+        plt.xticks(np.arange(len(exp_sorted)), exp_sorted, rotation=25)
+        plt.show()
+
+# - Find LGR5, correlate and anti-correlate
+i_cluster_lgr5 = clipped_data[clipped_data['GeneName'] == 'Lgr5']['k_index'].values[0]
+lgr5_lookalikes = clipped_data[clipped_data['k_index'] == i_cluster_lgr5]
+
+if plot_lgr5_cluster:
+        for i in range(len(lgr5_lookalikes['GeneName'].values)):
+            plt.plot(lgr5_lookalikes[exp_sorted].values[i, :], label=lgr5_lookalikes['GeneName'].values[i])
         plt.legend()
         plt.xticks(np.arange(len(exp_sorted)), exp_sorted, rotation=25)
         plt.show()
