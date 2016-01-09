@@ -5,27 +5,60 @@ import fastcluster as fc
 import scipy.cluster.hierarchy as sch
 from scipy.cluster.hierarchy import dendrogram, set_link_color_palette
 
+# Some settings
+gene_of_interest = 'Lgr5'
+
+plot_fulldata = False
+plot_dendrogram = False
+plot_clusters = False
+plot_gene_of_interest_cluster = True
+plot_anti_correlated_cluster = True
+
+n_clusters = 20
+expression_change_threshold = 0.1  # We pick the 5% of the genes which move the most
+folded_change_threshold = 0.25
+exp_names = ['WT_6h', 'KO_0h', 'KO_6h', 'WT_0h', 'WT_1h', 'WT_2h']      # Used to compute triplicates, file order
+exp_sorted = ['WT_0h', 'WT_1h', 'WT_2h', 'WT_6h', 'KO_0h', 'KO_6h']     # Used to sort experiments in a meaningful way
+filename = "marie.mc.group.limma.txt"
+
+# Helper functions
+
 
 def log_mean(log_values):
     exp_values = np.exp2(log_values)
     return np.log2(np.mean(exp_values))
 
 
-def fold_change(values):
-    pass
+def get_cluster_data(cluster_id, data):
+    # Get a slice of the array corresponding to a given cluster
+    # You can use a gene name (cluster that this gene belongs to), or a cluster number
+    if isinstance(cluster_id, str):
+        i_cluster = data[data['GeneName'] == cluster_id]['k_index'].values[0]
+        return data[data['k_index'] == i_cluster]
 
-# Some settings
-plot_fulldata = False
-plot_dendrogram = False
-plot_clusters = False
-plot_lgr5_cluster = True
+    return data[data['k_index'] == cluster_id]
 
-n_clusters = 20
-expression_change_threshold = 0.05  # We pick the 5% of the genes which move the most
-folded_change_threshold =  0.25
-exp_names = ['WT_6h', 'KO_0h', 'KO_6h', 'WT_0h', 'WT_1h', 'WT_2h']      # Used to compute triplicates
-exp_sorted = ['WT_0h', 'WT_1h', 'WT_2h', 'WT_6h', 'KO_0h', 'KO_6h']     # Used to sort experiments in a meaningful way
-filename = "marie.mc.group.limma.txt"
+
+def fold_change_threshold(val):
+    # - turn change into binary
+    return max(min(int(val/folded_change_threshold), 1), -1)
+
+
+def plot_cluster(_cluster_data, title=None):
+    for _i in range(len(_cluster_data['GeneName'].values)):
+        plt.plot(_cluster_data[exp_sorted].values[_i, :], label=_cluster_data['GeneName'].values[_i])
+    plt.legend()
+    plt.xticks(np.arange(len(exp_sorted)), exp_sorted, rotation=25)
+    plt.grid(True)
+    if title:
+        plt.title(title)
+    plt.show()
+
+
+def cluster_correlation(cluster1, cluster2):
+    first_cluster_val = cluster1[cluster_columns].median().values
+    second_cluster_val = cluster2[cluster_columns].median().values
+    return np.correlate(first_cluster_val, second_cluster_val)
 
 # ----------------------------------------------------------
 # Load the file into an array, can be indexed by names
@@ -73,11 +106,7 @@ clipped_data['FC_WT_6'] = clipped_data['WT_6h'] - clipped_data['WT_2h']
 clipped_data['FC_KO_0'] = clipped_data['KO_0h'] - clipped_data['WT_0h']
 clipped_data['FC_KO_6'] = clipped_data['KO_6h'] - clipped_data['KO_0h']
 
-
-def fold_change_threshold(val):
-    # - turn change into binary
-    return max(min(int(val*4), 1), -1)
-
+# - threshold change
 clipped_data['FC_WT_1'] = clipped_data['FC_WT_1'].apply(fold_change_threshold)
 clipped_data['FC_WT_2'] = clipped_data['FC_WT_2'].apply(fold_change_threshold)
 clipped_data['FC_WT_6'] = clipped_data['FC_WT_6'].apply(fold_change_threshold)
@@ -95,39 +124,43 @@ clipped_data['FC_KO_6'] = clipped_data['FC_KO_0'] + clipped_data['FC_KO_6']
 method = 'complete'
 metric = 'euclidean'  # metric: define here
 
-cluster_collumns = ['FC_WT_1', 'FC_WT_2', 'FC_WT_6', 'FC_KO_0', 'FC_KO_6']
+cluster_columns = ['FC_WT_1', 'FC_WT_2', 'FC_WT_6', 'FC_KO_0', 'FC_KO_6']
 
-# - run the hierarchical clustering
-clust_total = fc.linkage(clipped_data[cluster_collumns], method=method, metric=metric)
-
-# - crop dendrogram to n clusters, all of them are available if needed
-short_clust = sch.fcluster(clust_total, n_clusters, criterion='maxclust')
+# - run the hierarchical clustering, then crop to n clusters
+cluster_total = fc.linkage(clipped_data[cluster_columns], method=method, metric=metric)
+cluster_shortened = sch.fcluster(cluster_total, n_clusters, criterion='maxclust')
 
 if plot_dendrogram:
-    dendrogram(clust_total, p=n_clusters)
+    dendrogram(cluster_total, p=n_clusters)
     plt.show()
 
 # - get back to Panda
-clipped_data["k_index"] = pd.Series(short_clust, index=clipped_data[exp_sorted].index)
+clipped_data["k_index"] = pd.Series(cluster_shortened, index=clipped_data[exp_sorted].index)
 
 # - Get some plots to check that we got something interesting
 if plot_clusters:
     for cluster in range(n_clusters):
         subset = clipped_data[clipped_data['k_index'] == cluster + 1]
+        plot_cluster(subset)
 
-        for i in range(len(subset['GeneName'].values)):
-            plt.plot(subset[exp_sorted].values[i, :], label=subset['GeneName'].values[i])
-        plt.legend()
-        plt.xticks(np.arange(len(exp_sorted)), exp_sorted, rotation=25)
-        plt.show()
+# ----------------------------------------------------------
+# - Find Gene of interest companions
+lookalikes = get_cluster_data(gene_of_interest, clipped_data)
 
-# - Find LGR5, correlate and anti-correlate
-i_cluster_lgr5 = clipped_data[clipped_data['GeneName'] == 'Lgr5']['k_index'].values[0]
-lgr5_lookalikes = clipped_data[clipped_data['k_index'] == i_cluster_lgr5]
+if plot_gene_of_interest_cluster:
+    plot_cluster(lookalikes, "Cluster corresponding to " + gene_of_interest)
 
-if plot_lgr5_cluster:
-        for i in range(len(lgr5_lookalikes['GeneName'].values)):
-            plt.plot(lgr5_lookalikes[exp_sorted].values[i, :], label=lgr5_lookalikes['GeneName'].values[i])
-        plt.legend()
-        plt.xticks(np.arange(len(exp_sorted)), exp_sorted, rotation=25)
-        plt.show()
+# - Find anti-correlated cluster
+worse_correlation = 0
+anti_correlated_cluster = None
+
+for index in clipped_data['k_index'].values:
+    cluster_data = get_cluster_data(index, clipped_data)
+    correlation = cluster_correlation(cluster_data, lookalikes)
+
+    if correlation < worse_correlation:
+        worse_correlation = correlation
+        anti_correlated_cluster = cluster_data
+
+if anti_correlated_cluster is not None and plot_anti_correlated_cluster:
+    plot_cluster(anti_correlated_cluster, "Anti correlated cluster to " + gene_of_interest)
