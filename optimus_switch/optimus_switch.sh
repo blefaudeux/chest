@@ -15,7 +15,7 @@ done
 
 function switch_nvidia {
     echo "Setting up SDDM..."
-    sudo mv /usr/share/sddm/scripts/Xsetup.nvidia /usr/share/sddm/scripts/XSetup
+    sudo cp /usr/share/sddm/scripts/Xsetup.nvidia /usr/share/sddm/scripts/XSetup
     echo "Done"
 
     # Install the nvidia libs
@@ -25,13 +25,13 @@ function switch_nvidia {
 
     # Install the Xorg config
     echo "Setting up Xorg"
-    sudo mv /etc/X11/xorg.conf.nvidia /etc/X11/xorg.conf
+    sudo cp /etc/X11/xorg.conf.nvidia /etc/X11/xorg.conf
     echo "Done"
 }
 
 function switch_intel {
     echo "Setting up SDDM.."
-    sudo mv /usr/share/sddm/scripts/Xsetup.intel /usr/share/sddm/scripts/XSetup
+    sudo cp /usr/share/sddm/scripts/Xsetup.intel /usr/share/sddm/scripts/XSetup
     echo "Done"
     
     echo "Setting up GL libs.."
@@ -40,7 +40,7 @@ function switch_intel {
 
     # Install the Xorg config
     echo "Setting up Xorg"
-    sudo mv --backup=t /etc/X11/xorg.conf /etc/X11/ 
+    sudo cp --backup=t /etc/X11/xorg.conf /etc/X11/ 
     echo "Done"
 }
 
