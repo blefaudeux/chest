@@ -40,7 +40,7 @@ function switch_intel {
 
     # Install the Xorg config
     echo "Setting up Xorg"
-    sudo cp --backup=t /etc/X11/xorg.conf /etc/X11/ 
+    sudo cp --backup=t /etc/X11/xorg.conf /etc/X11/xorg.conf.backup 
     echo "Done"
 }
 
