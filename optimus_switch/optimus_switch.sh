@@ -31,7 +31,8 @@ function switch_nvidia {
 
 function switch_intel {
     echo "Setting up SDDM.."
-    sudo cp /usr/share/sddm/scripts/Xsetup.intel /usr/share/sddm/scripts/XSetup
+    sudo cp /usr/share/sddm/scripts/Xsetup.intel 
+/usr/share/sddm/scripts/Xsetup
     echo "Done"
     
     echo "Setting up GL libs.."
