@@ -35,6 +35,17 @@ backup_folder()
     rm  $SEMAPHORE
 }
 
+backup_path()
+{
+    echo "Looking for backups under $1"
+
+    for folder in `find $1 -name "*.duplicacy*" -type d`
+    do
+        folder_path=${folder%/.duplicacy}
+        backup_folder $folder_path
+    done
+}
+
 send_success_mail()
 {
     echo "To:$1\n" > $TMP_MAIL
@@ -51,11 +62,8 @@ send_success_mail()
 echo "\n\n *** New backup session *** \n" > $TMP_LOG
 sleep 5
 
-for folder in `find $HOME -name "*.duplicacy*" -type d`
-do
-    folder_path=${folder%/.duplicacy}
-    backup_folder $folder_path
-done
+backup_path $HOME
+backup_path "/media/Data"
 echo "Backup done"
 
 # Post-backup maintenance
