@@ -122,8 +122,8 @@ if __name__ == "__main__":
 
     print("{:.2}s naive power".format(timeit.timeit(res_ref)))
     print("{:.2}s recursive power".format(timeit.timeit(res_recursive)))
-    print("{:.2}s better power".format(timeit.timeit(res)))
-    print("{:.2}s better power LUT".format(timeit.timeit(res_lut)))
+    print("{:.2}s const footprint power".format(timeit.timeit(res)))
+    print("{:.2}s const footprint power + LUT".format(timeit.timeit(res_lut)))
 
     # The following calls are cached by cpython
     if res() != res_ref() or res() != res_lut():
