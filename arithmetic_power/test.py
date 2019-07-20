@@ -12,7 +12,7 @@ def recursive_power(a, b):
     if b == 1:
         return a
 
-    r = recursive_power(a, b/2)
+    r = recursive_power(a, b // 2)
 
     if b % 2 == 0:
         return r * r
@@ -53,7 +53,7 @@ def better_power_constant_footprint(a, b):
         return carry
 
     # Do the rest the naive way
-    for _ in range(b-exp):
+    for _ in range(b - exp):
         carry *= a
 
     return carry
@@ -80,15 +80,12 @@ def better_power_lut(a, b):
         lut_exp.append(exp)
         lut_res.append(carry)
 
-    lut_exp.pop()  # This sample cannot be usable
-    lut_res.pop()
-
     # Walk back the LUT to reuse intermediates if possible
     while lut_exp and exp < b:
         opt_exp = lut_exp.pop()
         opt_res = lut_res.pop()
 
-        if opt_exp < b-exp:
+        if opt_exp < b - exp:
             carry *= opt_res
             exp += opt_exp
 
@@ -96,7 +93,7 @@ def better_power_lut(a, b):
     if exp == b:
         return carry
 
-    for _ in range(b-exp):
+    for _ in range(b - exp):
         carry *= a
     return carry
 
@@ -104,7 +101,7 @@ def better_power_lut(a, b):
 if __name__ == "__main__":
     print("testing recursive power:")
     a = random.randint(-1000, 1000)
-    b = random.randint(0, 100)
+    b = random.randint(50, 1000)
     print("a: {}, b = {}".format(a, b))
 
     def res():
@@ -114,7 +111,8 @@ if __name__ == "__main__":
         try:
             return recursive_power(a, b)
         except RecursionError:
-            return "Recursion Error - stack overflow"
+            print("Recursion Error - stack overflow")
+            return -1
 
     def res_lut():
         return better_power_lut(a, b)
@@ -123,7 +121,7 @@ if __name__ == "__main__":
         return naive_power(a, b)
 
     print("{:.2}s naive power".format(timeit.timeit(res_ref)))
-    print("{} recursive power".format(res_recursive()))
+    print("{:.2}s recursive power".format(timeit.timeit(res_recursive)))
     print("{:.2}s better power".format(timeit.timeit(res)))
     print("{:.2}s better power LUT".format(timeit.timeit(res_lut)))
 
