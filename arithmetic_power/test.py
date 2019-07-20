@@ -106,7 +106,6 @@ if __name__ == "__main__":
     a = random.randint(-1000, 1000)
     b = random.randint(0, 100)
     print("a: {}, b = {}".format(a, b))
-    better_power_lut(a, b)
 
     def res():
         return better_power_constant_footprint(a, b)
@@ -123,10 +122,10 @@ if __name__ == "__main__":
     def res_ref():
         return naive_power(a, b)
 
-    print("naive power: {:.2}s".format(timeit.timeit(res_ref)))
-    print("recursive power: {}".format(res_recursive()))
-    print("better power: {:.2}s".format(timeit.timeit(res)))
-    print("better power LUT: {:.2}s".format(timeit.timeit(res_lut)))
+    print("{:.2}s naive power".format(timeit.timeit(res_ref)))
+    print("{} recursive power".format(res_recursive()))
+    print("{:.2}s better power".format(timeit.timeit(res)))
+    print("{:.2}s better power LUT".format(timeit.timeit(res_lut)))
 
     # The following calls are cached by cpython
     if res() != res_ref() or res() != res_lut():
