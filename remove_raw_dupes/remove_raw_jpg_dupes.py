@@ -29,7 +29,6 @@ def run(args):
         list(folderpath.glob("**/*.JPG"))
 
     # Find duplicated files
-    remove_jpg = not args.remove_raw
     for filepath in list_raws:
         # Check whether the same file is in the jpgs list
         candidate = Path(filepath.parent / (filepath.stem + ".JPG"))
@@ -38,9 +37,11 @@ def run(args):
             print("{} and {} are duplicates".format(
                 filepath, list_jpgs[index]))
 
-            if remove_jpg:
+            if not args.remove_raw:
+                print("remove jpg - {}".format(list_jpgs[index]))
                 list_jpgs[index].unlink()
             else:
+                print("remove raw - {}".format(filepath))
                 filepath.unlink()
 
 
